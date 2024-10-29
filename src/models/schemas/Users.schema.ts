@@ -16,7 +16,6 @@ interface UserType {
   email_verify_token?: string // jwt hoặc '' nếu đã xác thực email
   forgot_password_token?: string // jwt hoặc '' nếu đã xác thực email
   verify?: UserVerifyStatus
-
   bio?: string // optional
   location?: string // optional
   website?: string // optional

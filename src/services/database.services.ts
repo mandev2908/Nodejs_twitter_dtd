@@ -30,6 +30,5 @@ class DatabaseService {
   }
 }
 
-// Tạo Obj từ class DatabaseService
 const databaseService = new DatabaseService()
 export default databaseService
