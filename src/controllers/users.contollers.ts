@@ -3,17 +3,6 @@ import userService from '~/services/users.services'
 
 export const loginController = async (req: Request, res: Response) => {
   const { email, password } = req.body
-  /*--------------------------------------------------------------*/
-  // if (email === 'huynhman2908@gmail.com' && password === '123456') {
-  //   return res.json({
-  //     message: 'Logged in successfully!'
-  //   })
-  // }
-
-  // res.status(401).json({
-  //   message: 'Login failed! Incorrect username or password.'
-  // })
-  /*--------------------------------------------------------------*/
   try {
     const result = await userService.login({ email, password })
     return res.json({
