@@ -2,8 +2,8 @@ import User from '~/models/schemas/Users.schema'
 import databaseService from './database.services'
 
 class UserService {
-  async register({ email, password }: { email: string; password: string }) {
-    const user = await databaseService.users.insertOne(new User({ email, password }))
+  async register({ name, email, password }: { name: string; email: string; password: string }) {
+    const user = await databaseService.users.insertOne(new User({ name, email, password }))
     return user
   }
 
