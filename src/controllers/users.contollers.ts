@@ -22,13 +22,14 @@ export const loginController = async (req: Request, res: Response) => {
 }
 
 export const registerController = async (req: Request, res: Response) => {
-  const { email, password } = req.body
+  const { name, email, password } = req.body
   try {
-    const result = userService.register({ email, password })
+    const result = userService.register({ name, email, password })
     return res.status(201).json({
       message: 'Registration successful!',
       result: {
         userId: (await result).insertedId,
+        name,
         email,
         password
       }
