@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import { checkSchema } from 'express-validator'
+import userService from '~/services/users.services'
 import { validate } from '~/ultis/validation'
 
 export const loginValidator = (req: Request, res: Response, next: NextFunction) => {
@@ -22,7 +23,15 @@ export const registerValidator = validate(
       notEmpty: true,
       isEmail: true,
       trim: true,
-      errorMessage: 'Invalid email'
+      custom: {
+        options: async (value) => {
+          const isExistEmail = await userService.checkEmailExistence(value)
+          if (isExistEmail) {
+            throw new Error('Email already exists')
+          }
+          return true
+        }
+      }
     },
     password: {
       notEmpty: true,
