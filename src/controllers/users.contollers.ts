@@ -1,17 +1,14 @@
 import { Request, Response } from 'express'
+import { ParamsDictionary } from 'express-serve-static-core'
+import { LoginReqBody, RegisterReqBody } from '~/models/requests/User.requests'
 import userService from '~/services/users.services'
 
-export const loginController = async (req: Request, res: Response) => {
-  const { email, password } = req.body
+export const loginController = async (req: Request<ParamsDictionary, any, LoginReqBody>, res: Response) => {
   try {
-    const result = await userService.login({ email, password })
+    const result = await userService.login(req.body)
     return res.json({
       message: 'Logged in successfully!',
-      result: {
-        userId: result._id,
-        email,
-        password
-      }
+      result
     })
   } catch (error) {
     return res.status(401).json({
@@ -21,17 +18,17 @@ export const loginController = async (req: Request, res: Response) => {
   }
 }
 
-export const registerController = async (req: Request, res: Response) => {
-  const { name, email, password } = req.body
+export const registerController = async (req: Request<ParamsDictionary, any, RegisterReqBody>, res: Response) => {
   try {
-    const result = userService.register({ name, email, password })
+    const result = await userService.register(req.body)
     return res.status(201).json({
       message: 'Registration successful!',
       result: {
-        userId: (await result).insertedId,
-        name,
-        email,
-        password
+        name: req.body.name,
+        email: req.body.email,
+        password: req.body.password,
+        date_of_birth: req.body.date_of_birth,
+        ...result
       }
     })
   } catch (error) {
