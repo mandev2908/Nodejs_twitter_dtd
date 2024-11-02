@@ -1,12 +1,13 @@
 import { Request, Response, NextFunction } from 'express'
 import { checkSchema } from 'express-validator'
+import { ErrorWithStatus } from '~/models/Errors'
 import userService from '~/services/users.services'
 import { validate } from '~/ultis/validation'
 
 export const loginValidator = (req: Request, res: Response, next: NextFunction) => {
   const { email, password } = req.body
   if (!email || !password) {
-    return res.status(401).json({ message: 'Missing email or password' })
+    res.status(401).json({ message: 'Missing email or password' })
   }
   next()
 }
@@ -39,7 +40,7 @@ export const registerValidator = validate(
       isStrongPassword: {
         options: { minLength: 8, minLowercase: 1, minNumbers: 1, minSymbols: 1, minUppercase: 1 }
       },
-      errorMessage: 'Password is not strong enough'
+      errorMessage: 'Invalid password'
     },
     confirm_password: {
       notEmpty: true,
