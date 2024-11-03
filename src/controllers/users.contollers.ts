@@ -1,27 +1,37 @@
 import { Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
-import { LoginReqBody, RegisterReqBody } from '~/models/requests/User.requests'
+import { ObjectId } from 'mongodb'
+import { USERS_MESSAGES } from '~/constants/messages'
+import { RegisterReqBody } from '~/models/requests/User.requests'
+import User from '~/models/schemas/Users.schema'
 import userService from '~/services/users.services'
 
-export const loginController = async (req: Request<ParamsDictionary, any, LoginReqBody>, res: Response) => {
-  try {
-    const result = await userService.login(req.body)
-    res.json({
-      message: 'Logged in successfully!',
-      result
-    })
-  } catch (error) {
-    res.status(401).json({
-      message: 'Login failed! Incorrect email or password.',
-      error
-    })
-  }
+export const loginController = async (req: Request, res: Response) => {
+  const user = req.user as User
+  const user_id = user._id as ObjectId
+  const result = await userService.login(user_id.toString())
+  res.json({
+    message: USERS_MESSAGES.LOGIN_SUCCESSFULLY,
+    result: {
+      name: user.name,
+      email: user.email,
+      date_of_birth: user.date_of_birth,
+      avatar: user.avatar,
+      bio: user.bio,
+      location: user.location,
+      website: user.website,
+      username: user.username,
+      verify: user.verify,
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken
+    }
+  })
 }
 
 export const registerController = async (req: Request<ParamsDictionary, any, RegisterReqBody>, res: Response) => {
   const result = await userService.register(req.body)
   res.status(201).json({
-    message: 'Registration successful!',
+    message: USERS_MESSAGES.REGISTER_SUCCESS,
     result: {
       name: req.body.name,
       email: req.body.email,
