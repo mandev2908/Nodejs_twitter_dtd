@@ -5,7 +5,7 @@ import { wrapRequestHandling } from '~/ultis/handlers'
 
 const usersRouter = Router()
 
-usersRouter.post('/login', loginValidator, loginController)
+usersRouter.post('/login', loginValidator, wrapRequestHandling(loginController))
 usersRouter.post('/register', registerValidator, wrapRequestHandling(registerController))
 
 export default usersRouter

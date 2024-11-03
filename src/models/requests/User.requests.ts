@@ -1,8 +1,3 @@
-export interface LoginReqBody {
-  email: string
-  password: string
-}
-
 export interface RegisterReqBody {
   email: string
   password: string
