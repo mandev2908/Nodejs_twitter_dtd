@@ -22,8 +22,7 @@ export const loginController = async (req: Request, res: Response) => {
       website: user.website,
       username: user.username,
       verify: user.verify,
-      accessToken: result.accessToken,
-      refreshToken: result.refreshToken
+      ...result
     }
   })
 }
@@ -37,7 +36,8 @@ export const registerController = async (req: Request<ParamsDictionary, any, Reg
       email: req.body.email,
       password: req.body.password,
       date_of_birth: req.body.date_of_birth,
-      ...result
+      access_token: result.accessToken,
+      refresh_token: result.refreshToken
     }
   })
 }
