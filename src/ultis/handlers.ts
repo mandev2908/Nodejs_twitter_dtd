@@ -1,10 +1,10 @@
-import { NextFunction, Request, Response, RequestHandler } from 'express'
+import { NextFunction, Request, Response } from 'express'
 
 // Tạo wrapRequestHandler để xử lý lỗi
-export const wrapRequestHandling = (func: RequestHandler) => {
+export const wrapRequestHandling = (func: any) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      await func(req, res, next)
+      return await func(req, res, next)
     } catch (error) {
       next(error)
     }

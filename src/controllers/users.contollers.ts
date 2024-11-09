@@ -10,7 +10,7 @@ export const loginController = async (req: Request, res: Response) => {
   const user = req.user as User
   const user_id = user._id as ObjectId
   const result = await userService.login(user_id.toString())
-  res.json({
+  return res.json({
     message: USERS_MESSAGES.LOGIN_SUCCESSFULLY,
     result: {
       name: user.name,
@@ -22,22 +22,23 @@ export const loginController = async (req: Request, res: Response) => {
       website: user.website,
       username: user.username,
       verify: user.verify,
-      accessToken: result.accessToken,
-      refreshToken: result.refreshToken
+      access_token: result.accessToken,
+      refresh_token: result.refreshToken
     }
   })
 }
 
 export const registerController = async (req: Request<ParamsDictionary, any, RegisterReqBody>, res: Response) => {
   const result = await userService.register(req.body)
-  res.status(201).json({
+  return res.status(201).json({
     message: USERS_MESSAGES.REGISTER_SUCCESS,
     result: {
       name: req.body.name,
       email: req.body.email,
       password: req.body.password,
       date_of_birth: req.body.date_of_birth,
-      ...result
+      access_token: result.accessToken,
+      refresh_token: result.refreshToken
     }
   })
 }

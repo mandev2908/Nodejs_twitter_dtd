@@ -1,5 +1,7 @@
 import { createHash } from 'crypto'
-
+import { config } from 'dotenv'
+// Load environment variables from.env file
+config()
 function sha256(content: string) {
   return createHash('sha256').update(content).digest('hex')
 }

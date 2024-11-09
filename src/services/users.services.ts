@@ -4,7 +4,10 @@ import { RegisterReqBody } from '~/models/requests/User.requests'
 import { hashPassword } from '~/ultis/crypto'
 import { signToken } from '~/ultis/jwt'
 import { TokenTypes } from '~/constants/enums'
-
+import { ObjectId } from 'mongodb'
+import { config } from 'dotenv'
+// Load environment variables from.env file
+config()
 class UserService {
   private signAccessToken(user_id: string) {
     return signToken({
@@ -31,12 +34,16 @@ class UserService {
     const user_id = user.insertedId.toString()
     // Tạo accessToken và refreshToken
     const [accessToken, refreshToken] = await this.signAccessAndRefreshTokens(user_id)
+    // Lưu refreshToken vào database
+    await databaseService.refreshTokens.insertOne({ user_id: new ObjectId(user_id), refresh_token: refreshToken })
     return { user_id, accessToken, refreshToken }
   }
 
   async login(user_id: string) {
     // Tạo accessToken và refreshToken
     const [accessToken, refreshToken] = await this.signAccessAndRefreshTokens(user_id)
+    // Lưu refreshToken vào database
+    await databaseService.refreshTokens.insertOne({ user_id: new ObjectId(user_id), refresh_token: refreshToken })
     return { accessToken, refreshToken }
   }
   async checkEmailExistence(email: string) {
