@@ -6,6 +6,7 @@ import { signToken } from '~/ultis/jwt'
 import { TokenTypes } from '~/constants/enums'
 import { ObjectId } from 'mongodb'
 import { config } from 'dotenv'
+import { USERS_MESSAGES } from '~/constants/messages'
 // Load environment variables from.env file
 config()
 class UserService {
@@ -33,22 +34,34 @@ class UserService {
     )
     const user_id = user.insertedId.toString()
     // Tạo accessToken và refreshToken
-    const [accessToken, refreshToken] = await this.signAccessAndRefreshTokens(user_id)
+    const [access_token, refresh_token] = await this.signAccessAndRefreshTokens(user_id)
     // Lưu refreshToken vào database
-    await databaseService.refreshTokens.insertOne({ user_id: new ObjectId(user_id), refresh_token: refreshToken })
-    return { user_id, accessToken, refreshToken }
+    await databaseService.refreshTokens.insertOne({ user_id: new ObjectId(user_id), refresh_token })
+    return { user_id, access_token, refresh_token }
   }
 
   async login(user_id: string) {
     // Tạo accessToken và refreshToken
-    const [accessToken, refreshToken] = await this.signAccessAndRefreshTokens(user_id)
+    const [access_token, refresh_token] = await this.signAccessAndRefreshTokens(user_id)
     // Lưu refreshToken vào database
-    await databaseService.refreshTokens.insertOne({ user_id: new ObjectId(user_id), refresh_token: refreshToken })
-    return { accessToken, refreshToken }
+    await databaseService.refreshTokens.insertOne({ user_id: new ObjectId(user_id), refresh_token })
+    return { access_token, refresh_token }
   }
   async checkEmailExistence(email: string) {
     const user = await databaseService.users.findOne({ email })
     return Boolean(user)
+  }
+
+  async logout(refresh_token: string) {
+    try {
+      const result = await databaseService.refreshTokens.deleteOne({ refresh_token })
+      if (result.deletedCount === 0) {
+        return { message: USERS_MESSAGES.TOKEN_NOT_FOUND }
+      }
+      return { message: USERS_MESSAGES.LOGOUT_SUCCESS }
+    } catch (error) {
+      throw new Error(USERS_MESSAGES.LOGOUT_FAILURE)
+    }
   }
 }
 

@@ -1,4 +1,6 @@
+import { config } from 'dotenv'
 import { checkSchema } from 'express-validator'
+import { JsonWebTokenError } from 'jsonwebtoken'
 import { HTTP_STATUS } from '~/constants/httpStatus'
 import { USERS_MESSAGES } from '~/constants/messages'
 import { ErrorWithStatus } from '~/models/Errors'
@@ -7,6 +9,9 @@ import userService from '~/services/users.services'
 import { hashPassword } from '~/ultis/crypto'
 import { verifyToken } from '~/ultis/jwt'
 import { validate } from '~/ultis/validation'
+import { capitalize } from 'lodash'
+import { Request } from 'express'
+config()
 
 export const loginValidator = validate(
   checkSchema(
@@ -138,10 +143,26 @@ export const registerValidator = validate(
   )
 )
 
+// Hàm dùng chung để xác thực token
+const verifyAndDecodeToken = async (token: string, secret: string, errorMessage: string) => {
+  try {
+    return await verifyToken({ token, secretOrPublicKey: secret })
+  } catch (error) {
+    if (error instanceof JsonWebTokenError) {
+      throw new ErrorWithStatus({
+        message: capitalize(error.message || errorMessage),
+        status: HTTP_STATUS.UNAUTHORIZED
+      })
+    }
+    throw error
+  }
+}
+
 export const accessTokenValidator = validate(
   checkSchema(
     {
       authorization: {
+        notEmpty: { errorMessage: USERS_MESSAGES.ACCESS_TOKEN_IS_REQUIRED },
         custom: {
           options: async (value: string, { req }) => {
             const access_token = value.split(' ')[1]
@@ -151,13 +172,46 @@ export const accessTokenValidator = validate(
                 status: HTTP_STATUS.UNAUTHORIZED
               })
             }
-            const decode_authorization = await verifyToken({ token: access_token })
-            req.decode_authorization = decode_authorization
+            ;(req as Request).decoded_authorization = await verifyAndDecodeToken(
+              access_token,
+              process.env.ACCESS_TOKEN_SECRET!,
+              USERS_MESSAGES.ACCESS_TOKEN_IS_INVALID
+            )
             return true
           }
         }
       }
     },
     ['headers']
+  )
+)
+
+export const refreshTokenValidator = validate(
+  checkSchema(
+    {
+      refresh_token: {
+        notEmpty: { errorMessage: USERS_MESSAGES.REFRESH_TOKEN_IS_REQUIRED },
+        custom: {
+          options: async (value: string, { req }) => {
+            // Xác thực và giải mã token trước khi kiểm tra trong cơ sở dữ liệu
+            ;(req as Request).decoded_refresh_token = await verifyAndDecodeToken(
+              value,
+              process.env.REFRESH_TOKEN_SECRET!,
+              USERS_MESSAGES.REFRESH_TOKEN_IS_INVALID
+            )
+
+            const refresh_token = await databaseService.refreshTokens.findOne({ refresh_token: value })
+            if (!refresh_token) {
+              throw new ErrorWithStatus({
+                message: USERS_MESSAGES.USED_REFRESH_TOKEN_OR_NOT_EXIST,
+                status: HTTP_STATUS.UNAUTHORIZED
+              })
+            }
+            return true
+          }
+        }
+      }
+    },
+    ['body']
   )
 )
