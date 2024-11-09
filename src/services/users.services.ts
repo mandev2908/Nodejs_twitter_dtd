@@ -44,7 +44,7 @@ class UserService {
     const [accessToken, refreshToken] = await this.signAccessAndRefreshTokens(user_id)
     // Lưu refreshToken vào database
     await databaseService.refreshTokens.insertOne({ user_id: new ObjectId(user_id), refresh_token: refreshToken })
-    return { access_token: accessToken, refresh_token: refreshToken }
+    return { accessToken, refreshToken }
   }
   async checkEmailExistence(email: string) {
     const user = await databaseService.users.findOne({ email })
